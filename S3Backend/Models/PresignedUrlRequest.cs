@@ -14,5 +14,10 @@
         /// 
         /// </summary>
         public int PartNumber { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public string ContentType { get; set; }
     }
 }

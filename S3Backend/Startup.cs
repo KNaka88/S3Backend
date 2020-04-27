@@ -13,6 +13,8 @@ namespace S3Backend
         public IConfiguration Configuration { get; }
         public IWebHostEnvironment WebHostEnvironment { get; }
 
+        public readonly string LocalhostOrigins = "local_development";
+
         public Startup(IWebHostEnvironment env)
         {
             WebHostEnvironment = env;
@@ -31,6 +33,15 @@ namespace S3Backend
             if (WebHostEnvironment.IsDevelopment())
             {
                 services.ConfigureLocalStack();
+
+                services.AddCors(options =>
+                {
+                    options.AddPolicy(name: LocalhostOrigins, builder =>
+                    {
+                        builder.WithOrigins("https://localhost:3000")
+                                .AllowAnyHeader();
+                    });
+                });
             }
             else
             {
@@ -61,6 +72,7 @@ namespace S3Backend
 
             app.UseHttpsRedirection();
             app.UseRouting();
+            app.UseCors(LocalhostOrigins);
             app.UseAuthorization();
             app.UseEndpoints(endpoints =>
             {

@@ -56,10 +56,16 @@ namespace S3Backend.Controllers
         /// Start Multipart Upload
         /// </summary>
         /// <returns>UploadId</returns>
-        [HttpPost("startMultiPart")]
+        [HttpPost("Start_MultiPart")]
         public async Task<IActionResult> StartMultipartUpload([FromBody] Bucket request)
         {
-            var response = await _s3.InitiateMultipartUploadAsync(request.BucketName, request.Key);
+            var uploadRequest = new InitiateMultipartUploadRequest
+            {
+                BucketName = request.BucketName,
+                Key = request.Key,
+                ServerSideEncryptionMethod = ServerSideEncryptionMethod.AES256,
+            };
+            var response = await _s3.InitiateMultipartUploadAsync(uploadRequest);
             return new OkObjectResult(response.UploadId);
         }
 
@@ -75,11 +81,11 @@ namespace S3Backend.Controllers
             {
                 BucketName = request.BucketName,
                 Key = request.Key,
-                Verb = HttpVerb.PUT,  
-                ServerSideEncryptionMethod = ServerSideEncryptionMethod.AES256,
+                Verb = HttpVerb.PUT,
                 UploadId = request.UploadId,
                 PartNumber = request.PartNumber,
-                Expires = DateTime.UtcNow.AddMinutes(30)
+                ContentType = request.ContentType,
+                Expires = DateTime.UtcNow.AddMinutes(30),
             };
             
             return new OkObjectResult(_s3.GetPreSignedURL(presignedUrlRequest));           
