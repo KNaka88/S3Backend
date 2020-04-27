@@ -1,4 +1,4 @@
-﻿namespace S3Backend.Controllers
+﻿namespace S3Backend.Models
 {
     /// <summary>
     /// Bucket object model
