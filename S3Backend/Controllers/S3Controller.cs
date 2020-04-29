@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using S3Backend.Models;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace S3Backend.Controllers
@@ -41,6 +42,18 @@ namespace S3Backend.Controllers
         }
 
         /// <summary>
+        /// Returns all S3 Objects from S3.
+        /// </summary>
+        /// <returns>List of <see cref="S3Object"/></returns>
+        [HttpPost("files/all")]
+        public async Task<IActionResult> ListFiles([FromBody] Bucket bucket)
+        {
+            var response = await _s3.ListObjectsAsync(bucket.BucketName);
+            return new OkObjectResult(response.S3Objects);
+        }
+
+
+        /// <summary>
         /// Create a new S3 bucket.
         /// </summary>
         /// <param name="request"></param>
@@ -49,6 +62,31 @@ namespace S3Backend.Controllers
         public async Task<IActionResult> CreateBucket([FromBody] CreateBucketRequest request)
         {
             await _s3.PutBucketAsync(request.BucketName);
+
+            var corsConfigurationRequest = new PutCORSConfigurationRequest
+            {
+                BucketName = request.BucketName,
+                Configuration = new CORSConfiguration
+                {
+                    Rules = new List<CORSRule>
+                    {
+                        new CORSRule
+                        {
+                            AllowedOrigins = new List<string> { "https://localhost:3000" },
+                            AllowedMethods = new List<string> { "PUT", "POST", "DELETE" },
+                            AllowedHeaders = new List<string> { "*" },
+                            ExposeHeaders = new List<string> { "ETag" }
+                        },
+                        new CORSRule
+                        {
+                            AllowedOrigins = new List<string> { "*" },
+                            AllowedMethods = new List<string> { "GET" },
+                        }
+                    }
+                }
+            };
+            await _s3.PutCORSConfigurationAsync(corsConfigurationRequest);
+
             return new OkObjectResult(request.BucketName);
         }
 

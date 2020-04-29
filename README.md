@@ -27,29 +27,7 @@ services:
       - AWS_SECRET_KEY=YOUR_SECRET_KEY
 ```
 
-It is not recommended to use credentials keys for deployment.
-For the production environment, consider using IAM Role
-
 
 ### How to implement frontend?
 
 Coming soon...
-
-
-#### Known Issues
-
-* Localstack throws error when Server Side Encryption is added.
-* See S3Controller.cs StartMultipartUpload
-```
-        public async Task<IActionResult> StartMultipartUpload([FromBody] Bucket request)
-        {
-            var uploadRequest = new InitiateMultipartUploadRequest
-            {
-                BucketName = request.BucketName,
-                Key = request.Key,
-                ServerSideEncryptionMethod = ServerSideEncryptionMethod.AES256, // remove this line if you run with localstack
-            };
-            var response = await _s3.InitiateMultipartUploadAsync(uploadRequest);
-            return new OkObjectResult(response.UploadId);
-        }
-```
