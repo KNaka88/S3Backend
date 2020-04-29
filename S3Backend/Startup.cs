@@ -32,7 +32,15 @@ namespace S3Backend
         {
             if (WebHostEnvironment.IsDevelopment())
             {
-                services.ConfigureLocalStack();
+                var parseSuccess = bool.TryParse(Environment.GetEnvironmentVariable("USE_LOCAL_STACK"), out var useLocalStack);
+                if (parseSuccess && useLocalStack)
+                {
+                    services.ConfigureLocalStack();
+                }
+                else
+                {
+                    services.ConfigureAWS();
+                }
 
                 services.AddCors(options =>
                 {

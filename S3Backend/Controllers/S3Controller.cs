@@ -63,7 +63,7 @@ namespace S3Backend.Controllers
             {
                 BucketName = request.BucketName,
                 Key = request.Key,
-                ServerSideEncryptionMethod = ServerSideEncryptionMethod.AES256,
+                ServerSideEncryptionMethod = ServerSideEncryptionMethod.AES256, // remove this line if you run with localstack
             };
             var response = await _s3.InitiateMultipartUploadAsync(uploadRequest);
             return new OkObjectResult(response.UploadId);

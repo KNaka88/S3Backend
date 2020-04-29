@@ -34,8 +34,23 @@ namespace S3Backend
         /// <param name="services">The <see cref="IServiceCollection"/>.</param>
         public static void ConfigureAWS(this IServiceCollection services)
         {
+            var accessKey = Environment.GetEnvironmentVariable("AWS_ACCESS_KEY");
+            var secretKey = Environment.GetEnvironmentVariable("AWS_SECRET_KEY");
             var awsRegion = Environment.GetEnvironmentVariable("AWS_REGION") ?? "us-west-2";
-            services.AddSingleton<IAmazonS3, AmazonS3Client>(s => new AmazonS3Client(RegionEndpoint.GetBySystemName(awsRegion)));
+            var amazonS3Config = new AmazonS3Config
+            {
+                RegionEndpoint = RegionEndpoint.GetBySystemName(awsRegion)
+            };
+
+            if (accessKey != null && secretKey != null)
+            {
+                var awsCredentials = new BasicAWSCredentials(accessKey, secretKey);
+                services.AddSingleton<IAmazonS3, AmazonS3Client>(s => new AmazonS3Client(awsCredentials, amazonS3Config));
+            }
+            else
+            {
+                services.AddSingleton<IAmazonS3, AmazonS3Client>(s => new AmazonS3Client(amazonS3Config));
+            }
         }
     }
 }
