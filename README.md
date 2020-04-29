@@ -22,7 +22,7 @@ version: '3.4'
 services:
   s3backend:
     environment:
-      - USE_LOCALSTACK=false
+      - USE_LOCAL_STACK=false
       - AWS_ACCESS_KEY=YOUR_ACCESS_KEY
       - AWS_SECRET_KEY=YOUR_SECRET_KEY
 ```

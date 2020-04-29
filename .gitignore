@@ -359,5 +359,9 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 
+
+# Localstack
 .localstack/
-.vs/
+
+# Docker
+docker-compose.override.yml
