@@ -4,7 +4,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using S3Backend.Models;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace S3Backend.Controllers
@@ -104,7 +106,8 @@ namespace S3Backend.Controllers
                 ServerSideEncryptionMethod = ServerSideEncryptionMethod.AES256
             };
             var response = await _s3.InitiateMultipartUploadAsync(uploadRequest);
-            return new OkObjectResult(response.UploadId);
+
+            return new OkObjectResult(new StartMultiPartUploadResponse { UploadId = response.UploadId });
         }
 
         /// <summary>
@@ -115,18 +118,30 @@ namespace S3Backend.Controllers
         [HttpPost("Create_PresignedUrl")]
         public IActionResult CreatePresignedUrl([FromBody] PresignedUrlRequest request)
         {
-            var presignedUrlRequest = new GetPreSignedUrlRequest
+
+            var requests = request.PartNumbers.Select(partNumber => new GetPreSignedUrlRequest
             {
                 BucketName = request.BucketName,
                 Key = request.Key,
                 Verb = HttpVerb.PUT,
                 UploadId = request.UploadId,
-                PartNumber = request.PartNumber,
+                PartNumber = partNumber,
                 ContentType = request.ContentType,
                 Expires = DateTime.UtcNow.AddMinutes(30),
-            };
+            });
+
+            var responses = new BlockingCollection<CreatePresignedUrlsResponse>();
+
+            Parallel.ForEach(requests, (request) =>
+            {
+                responses.Add(new CreatePresignedUrlsResponse
+                {
+                    PartNumber = request.PartNumber,
+                    PresignedUrl = _s3.GetPreSignedURL(request)
+                });
+            });
             
-            return new OkObjectResult(_s3.GetPreSignedURL(presignedUrlRequest));           
+            return new OkObjectResult(responses.OrderBy(x => x.PartNumber));           
         }
 
         /// <summary>
@@ -136,8 +151,8 @@ namespace S3Backend.Controllers
         [HttpPost("Complete_MultiPartUpload")]
         public async Task<IActionResult> CompleteMultiPartUpload([FromBody] CompleteMultipartUploadRequest request)
         {
-            await _s3.CompleteMultipartUploadAsync(request);
-            return new OkResult();
+                await _s3.CompleteMultipartUploadAsync(request);
+                return new OkResult();
         }
     }
 }

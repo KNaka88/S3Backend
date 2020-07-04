@@ -1,4 +1,6 @@
-﻿namespace S3Backend.Models
+﻿using System.Collections.Generic;
+
+namespace S3Backend.Models
 {
     /// <summary>
     /// 
@@ -13,7 +15,7 @@
         /// <summary>
         /// 
         /// </summary>
-        public int PartNumber { get; set; }
+        public IList<int> PartNumbers { get; set; }
 
         /// <summary>
         /// 
