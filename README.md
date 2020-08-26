@@ -30,4 +30,4 @@ services:
 
 ### How to implement frontend?
 
-Coming soon...
+[See Multipart-Frontend](https://github.com/KNaka88/S3Multipart-Frontend)
